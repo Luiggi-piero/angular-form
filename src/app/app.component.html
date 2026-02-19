@@ -1,7 +1,10 @@
 <div>
   <button (click)="addItem()">Agregar item</button>
 
-  @for (formGroup of items(); track formGroup.controls.id.value) {
+  @for (
+    formGroup of form.controls.items.controls;
+    track formGroup.controls.id.value
+  ) {
     <app-form-child [formGroup]="formGroup" />
   }
 </div>

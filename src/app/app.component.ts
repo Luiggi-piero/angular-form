@@ -1,4 +1,5 @@
-import { Component, computed, effect, inject, signal } from '@angular/core';
+import { Component, computed, inject } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
 import {
   FormArray,
   FormControl,
@@ -33,30 +34,27 @@ export class AppComponent {
     items: this._fb.array<CustomFormGroup>([]),
   });
 
-  // todos los form group de items
-  items = signal(this.form.controls.items.controls);
+  get items() {
+    return this.form.controls.items;
+  }
+
+  // cualquier cambio de form, itemchanges lo tendrá
+  itemChanges = toSignal(this.form.valueChanges);
 
   // Suma todos los valores de todos los formularios
+  // si se actualiza itemChanges, totalValue también
   totalValue = computed(() => {
-    const value = this.items().reduce(
-      (total, formGroup) => total + Number(formGroup.controls.value.value),
+    const value = this.itemChanges()?.items?.reduce(
+      (total, item) => total + (Number(item?.value) || 0),
       0,
     );
-    console.log('Computed total value: ', value);
     return value;
   });
 
-  constructor() {
-    effect(() => {
-      // Cuando ocurra algún cambio en los formgroup actualizo items
-      this.form.controls.items.valueChanges.subscribe(() => {
-        this.items.set([...this.form.controls.items.controls]);
-      });
-    });
-  }
+  constructor() {}
 
   addItem() {
-    const id = this.items().length + 1;
+    const id = this.items.length + 1;
     const itemForm = this._fb.group<ItemForm>({
       id: this._fb.control(id),
       name: this._fb.control('', { validators: [Validators.required] }),
@@ -65,9 +63,6 @@ export class AppComponent {
 
     // Agregando el nuevo form al form array items
     this.form.controls.items.push(itemForm);
-
-    // actualizando la referencia al arreglo de formularios(items)
-    // Modificando el valor de la senial
-    this.items.set([...this.form.controls.items.controls]);
+    console.log('********item added: ', itemForm.value);
   }
 }

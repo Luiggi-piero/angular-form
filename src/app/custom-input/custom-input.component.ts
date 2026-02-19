@@ -1,4 +1,4 @@
-import { Component, effect, forwardRef, input } from '@angular/core';
+import { Component, forwardRef, input } from '@angular/core';
 import {
   ControlValueAccessor,
   FormControl,
@@ -40,21 +40,6 @@ export class CustomInputComponent implements ControlValueAccessor {
 
   onTouched = () => {};
   onChange = (_value: any) => {};
-
-  constructor() {
-    //  effect : corre al inicio y cuando cambia cualquier signal leído dentro.
-    effect(() => {
-      const currentSignalValue = this.control().value;
-
-      if (this.control().dirty || this.control().touched) {
-        const newValue = this.control().value;
-
-        if (newValue !== currentSignalValue) {
-          this.onChange(newValue);
-        }
-      }
-    });
-  }
 
   // - cambio del mismo angular(ts -> html)
   // - al ser un cambio interno(por ts, no del usuario)
